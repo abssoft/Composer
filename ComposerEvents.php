@@ -14,7 +14,6 @@ use Composer\Script\Event;
  *   },
  *   "extra": {
  *     "sxgeo-databases": [
- *        "SxGeo",
  *        "SxGeoCity"
  *     ]
  *   }
@@ -34,32 +33,40 @@ class ComposerEvents
             'SxGeoCity' => 'http://sypexgeo.net/files/SxGeoCity_utf8.zip',
         );
 
-        $targetDir = dirname(__DIR__);
+        $p=$event->getComposer()->getPackage()->getRequires();
+        if (!isset($p['sypexgeo/sypexgeo'])) {
+             $event->getIO()->write('<error>sypexgeo is not required!</error>');
+             return;
+        }
+        $targetDir = realpath(dirname(__DIR__).'/../sypexgeo/sypexgeo');
 
         foreach ($extra['sxgeo-databases'] as $database) {
             if (!isset($databases[$database])) {
                 $event->getIO()->write(sprintf('<error>Unknown database "%s"</error>', $database));
             }
 
-			      $zipfile = $targetDir . '/' . basename($databases[$database]);
-			      $datfile=$targetDir . '/' . basename($databases[$database],'.zip').'.dat';
+            $zipfile = $targetDir . '/' . basename($databases[$database]);
+            $datfile=$targetDir . '/' . $database.'.dat';
             if (is_file($datfile)) {
                 continue;
             }
             $event->getIO()->write(sprintf('Installing "%s" database', $database));
 
             copy($databases[$database], $zipfile);
-            $zip = new ZipArchive;
-            $res = $zip->open($zipfile, ZIPARCHIVE::OVERWRITE);
-            if ($res === TRUE) {
-              $zip->extractTo('.');
-              $zip->close();
-              unlink($zipfile);
-            } else {
-              $event->getIO()->write(sprintf('<error>Can\'t unzip file "%s"</error>', basename($zipfile)));
-            }
 
-            
+            $zip = new ZipArchive;
+            $res = $zip->open($zipfile);
+            if ($res === TRUE) {
+                if ($zip->extractTo($targetDir,$database.'.dat')){
+                    $event->getIO()->write(sprintf('"%s" extracted', $database));
+                } else {
+                    $event->getIO()->write(sprintf('<error>Error extracting file "%s"</error>',$database));
+                }
+                $zip->close();
+                unlink($zipfile);
+            } else {
+                $event->getIO()->write(sprintf('<error>Can\'t unzip file "%s"</error>', basename($zipfile)));
+            }
         }
     }
 }
