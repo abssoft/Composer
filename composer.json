@@ -1,0 +1,19 @@
+{
+    "name": "abssoft/Composer",
+    "description": "",
+    "version": "0.1",
+    "type": "library",
+    "require": {
+        "php": ">=5.3"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/abssoft/Composer"
+        }
+        
+    ],
+    "autoload": {
+        "classmap":["ComposerEvents.php"]
+    }
+}
