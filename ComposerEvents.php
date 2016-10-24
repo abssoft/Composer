@@ -39,7 +39,6 @@ class ComposerEvents
              return;
         }
         $targetDir = realpath(dirname(__DIR__).'/../sypexgeo/sypexgeo');
-
         foreach ($extra['sxgeo-databases'] as $database) {
             if (!isset($databases[$database])) {
                 $event->getIO()->write(sprintf('<error>Unknown database "%s"</error>', $database));
@@ -48,7 +47,7 @@ class ComposerEvents
             $zipfile = $targetDir . '/' . basename($databases[$database]);
             $datfile=$targetDir . '/' . $database.'.dat';
             if (is_file($datfile)) {
-                continue;
+                unlink($datfile);
             }
             $event->getIO()->write(sprintf('Installing "%s" database', $database));
 
